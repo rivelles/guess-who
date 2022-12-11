@@ -7,7 +7,13 @@ data class Question(
     val questionDescription: QuestionDescription,
     val questionAnswer: QuestionAnswer,
     val questionTips: QuestionTips
- )
+ ) {
+    fun answer(providedAnswer: QuestionAnswer): Boolean {
+        if (this.questionAnswer.answer == providedAnswer.answer) return true
+
+        return false
+    }
+}
 
 data class QuestionTips(val tips: List<String>)
 

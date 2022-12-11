@@ -8,22 +8,19 @@ import org.rivelles.guesswho.domain.commands.CreateSessionCommand
 import org.rivelles.guesswho.domain.*
 import org.rivelles.guesswho.domain.repositories.QuestionRepository
 import org.rivelles.guesswho.domain.repositories.SessionRepository
+import org.rivelles.guesswho.fixtures.aQuestion
+import org.rivelles.guesswho.fixtures.anUserIdentifier
 import java.lang.RuntimeException
 import java.time.LocalDate
-import java.util.UUID.randomUUID
 
 internal class CreateSessionCommandHandlerTest : BehaviorSpec({
     val sessionRepository = mockk<SessionRepository>(relaxed = true)
     val questionRepository = mockk<QuestionRepository>()
 
-    val question = Question(
-        QuestionId(randomUUID()),
-        QuestionDescription("Question"),
-        QuestionAnswer("Answer"),
-        QuestionTips(emptyList())
-    )
+    val question = aQuestion()
+    val userIdentifier = anUserIdentifier()
 
-    val userIdentifier = UserIdentifier("168.0.0.1")
+    val commandHandler = CreateSessionCommandHandler(sessionRepository, questionRepository)
 
     mockkStatic(LocalDate::class)
 
@@ -38,19 +35,19 @@ internal class CreateSessionCommandHandlerTest : BehaviorSpec({
 
                 every { questionRepository.getQuestionOfTheDay() } returns question
 
-                val commandHandler = CreateSessionCommandHandler(sessionRepository, questionRepository)
+                val expectedSession = Session(userIdentifier, question)
+
                 commandHandler.handle(CreateSessionCommand(userIdentifier))
 
-                verify { sessionRepository.save(Session(userIdentifier, SessionDate(now), question)) }
+                verify { sessionRepository.save(expectedSession) }
             }
         }
         `when`("There is already a session for the user in the same day") {
             then("Should throw Exception") {
-                val existingSession = Session(userIdentifier, SessionDate(LocalDate.now()), question)
+                val existingSession = Session(userIdentifier, question)
 
                 every { sessionRepository.findTodaySessionForUser(any()) } returns existingSession
 
-                val commandHandler = CreateSessionCommandHandler(sessionRepository, questionRepository)
                 val exception = shouldThrow<RuntimeException> { commandHandler.handle(CreateSessionCommand(userIdentifier)) }
 
                 exception.javaClass shouldBe RuntimeException::class.java
@@ -63,7 +60,6 @@ internal class CreateSessionCommandHandlerTest : BehaviorSpec({
 
                 every { questionRepository.getQuestionOfTheDay() } returns null
 
-                val commandHandler = CreateSessionCommandHandler(sessionRepository, questionRepository)
                 val exception = shouldThrow<RuntimeException> { commandHandler.handle(CreateSessionCommand(userIdentifier)) }
 
                 exception.javaClass shouldBe IllegalStateException::class.java
