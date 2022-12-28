@@ -5,4 +5,5 @@ import org.rivelles.guesswho.domain.UserIdentifier
 
 data class AnswerQuestionForSessionCommand(
     val userIdentifier: UserIdentifier,
-    val providedAnswer: QuestionAnswer)
+    val providedAnswer: QuestionAnswer
+) : Command
