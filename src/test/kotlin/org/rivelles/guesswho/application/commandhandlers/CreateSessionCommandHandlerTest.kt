@@ -10,7 +10,7 @@ import org.rivelles.guesswho.domain.*
 import org.rivelles.guesswho.domain.commands.CreateSessionCommand
 import org.rivelles.guesswho.domain.repositories.QuestionRepository
 import org.rivelles.guesswho.domain.repositories.SessionRepository
-import org.rivelles.guesswho.fixtures.aQuestion
+import org.rivelles.guesswho.fixtures.aQuestionWithoutTips
 import org.rivelles.guesswho.fixtures.anUserIdentifier
 
 internal class CreateSessionCommandHandlerTest :
@@ -18,7 +18,7 @@ internal class CreateSessionCommandHandlerTest :
         val sessionRepository = mockk<SessionRepository>(relaxed = true)
         val questionRepository = mockk<QuestionRepository>()
 
-        val question = aQuestion()
+        val question = aQuestionWithoutTips()
         val userIdentifier = anUserIdentifier()
 
         val commandHandler = CreateSessionCommandHandler(sessionRepository, questionRepository)

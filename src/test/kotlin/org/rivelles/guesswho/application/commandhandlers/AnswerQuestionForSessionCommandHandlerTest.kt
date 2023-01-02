@@ -11,13 +11,13 @@ import org.rivelles.guesswho.domain.QuestionAnswer
 import org.rivelles.guesswho.domain.Session
 import org.rivelles.guesswho.domain.commands.AnswerQuestionForSessionCommand
 import org.rivelles.guesswho.domain.repositories.SessionRepository
-import org.rivelles.guesswho.fixtures.aQuestion
+import org.rivelles.guesswho.fixtures.aQuestionWithoutTips
 import org.rivelles.guesswho.fixtures.anUserIdentifier
 
 class AnswerQuestionForSessionCommandHandlerTest :
     BehaviorSpec({
         val userIdentifier = anUserIdentifier()
-        val question = aQuestion()
+        val question = aQuestionWithoutTips()
         val sessionRepository = mockk<SessionRepository>(relaxed = true)
         val commandHandler = AnswerQuestionForSessionCommandHandler(sessionRepository)
 
