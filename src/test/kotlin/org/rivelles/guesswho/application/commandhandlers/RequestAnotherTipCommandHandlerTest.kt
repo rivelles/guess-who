@@ -6,6 +6,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.verify
 import java.lang.RuntimeException
 import java.time.LocalDate
 import org.rivelles.guesswho.domain.Session
@@ -33,9 +34,9 @@ class RequestAnotherTipCommandHandlerTest :
                         session
 
                     val command = RequestAnotherTipCommand(userIdentifier)
-                    val returnedSession = commandHandler.handle(command)
+                    commandHandler.handle(command)
 
-                    returnedSession.showedTips shouldBe "Test tip"
+                    verify { sessionRepository.save(session) }
                 }
             }
             `when`("There is no session for user today") {
