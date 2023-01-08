@@ -1,0 +1,3 @@
+package http
+
+class SessionsController {}
