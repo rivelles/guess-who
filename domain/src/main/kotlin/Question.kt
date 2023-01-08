@@ -14,9 +14,7 @@ data class Question(
     val questionDateOfAppearance: QuestionDateOfAppearance
 ) {
     fun answer(providedAnswer: QuestionAnswer): Boolean {
-        if (this.questionAnswer.answer == providedAnswer.answer) return true
-
-        return false
+        return questionAnswer.match(providedAnswer)
     }
 }
 
@@ -30,6 +28,10 @@ data class QuestionTips(val tips: List<String>) {
 data class QuestionAnswer(val answer: String) {
     init {
         validate(this) { validate(QuestionAnswer::answer).isNotBlank() }
+    }
+
+    fun match(questionAnswer: QuestionAnswer): Boolean {
+        return questionAnswer.answer == this.answer
     }
 }
 
