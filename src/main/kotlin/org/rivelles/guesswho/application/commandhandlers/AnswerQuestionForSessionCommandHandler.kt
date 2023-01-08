@@ -1,6 +1,5 @@
 package org.rivelles.guesswho.application.commandhandlers
 
-import org.rivelles.guesswho.domain.Session
 import org.rivelles.guesswho.domain.commands.AnswerQuestionForSessionCommand
 import org.rivelles.guesswho.domain.commands.CommandHandler
 import org.rivelles.guesswho.domain.repositories.SessionRepository
@@ -9,12 +8,12 @@ class AnswerQuestionForSessionCommandHandler(private val sessionRepository: Sess
     CommandHandler<AnswerQuestionForSessionCommand> {
 
     override fun handle(command: AnswerQuestionForSessionCommand) {
-        val session =
-            sessionRepository.findTodaySessionForUser(command.userIdentifier)
-                ?: throw RuntimeException("Session not found for user")
+        sessionRepository.findTodaySessionForUser(command.userIdentifier)?.let { session ->
+            session.answerQuestion(command.providedAnswer)
 
-        session.answerQuestion(command.providedAnswer)
-
-        session.takeIf(Session::isFinished)?.let { sessionRepository.save(it) }
+            sessionRepository.takeIf { session.isFinished() }?.save(session)
+            session
+        }
+            ?: throw RuntimeException("Session not found for user")
     }
 }
