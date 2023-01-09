@@ -1,6 +1,5 @@
-package http
+package org.rivelles.adapters.http
 
-import org.rivelles.http.SessionsHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.stereotype.Component

@@ -16,10 +16,12 @@ java.sourceCompatibility = JavaVersion.VERSION_17
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.valiktor:valiktor-core:0.12.0")
+    implementation("io.r2dbc:r2dbc-postgresql:1.0.0")
     implementation(project(":domain"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.kotest:kotest-runner-junit5:5.5.4")

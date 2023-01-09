@@ -1,4 +1,4 @@
-package org.rivelles.http
+package org.rivelles.adapters.http
 
 import UserIdentifier
 import commandhandlers.CreateSessionCommandHandler
