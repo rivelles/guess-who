@@ -2,8 +2,10 @@ package commandhandlers
 
 import commands.CommandHandler
 import commands.RequestAnotherTipCommand
+import org.springframework.stereotype.Component
 import repositories.SessionRepository
 
+@Component
 class RequestAnotherTipCommandHandler(private val sessionRepository: SessionRepository) :
     CommandHandler<RequestAnotherTipCommand> {
     override fun handle(command: RequestAnotherTipCommand) {

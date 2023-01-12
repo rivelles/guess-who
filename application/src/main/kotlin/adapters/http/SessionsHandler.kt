@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 
 @Component
-class SessionsHandler(val createSessionCommandHandler: CreateSessionCommandHandler) {
+class SessionsHandler(private val createSessionCommandHandler: CreateSessionCommandHandler) {
 
     suspend fun save(serverRequest: ServerRequest): ServerResponse {
         val createSessionForUserRequest =

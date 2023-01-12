@@ -2,8 +2,10 @@ package commandhandlers
 
 import commands.AnswerQuestionForSessionCommand
 import commands.CommandHandler
+import org.springframework.stereotype.Component
 import repositories.SessionRepository
 
+@Component
 class AnswerQuestionForSessionCommandHandler(private val sessionRepository: SessionRepository) :
     CommandHandler<AnswerQuestionForSessionCommand> {
 

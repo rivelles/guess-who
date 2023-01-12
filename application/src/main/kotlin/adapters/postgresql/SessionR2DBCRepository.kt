@@ -13,10 +13,10 @@ import UserIdentifier
 import java.time.LocalDate
 import java.util.UUID
 import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Repository
 import repositories.SessionRepository
 
-@Component
+@Repository
 class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionRepository {
     override fun findTodaySessionForUser(userIdentifier: UserIdentifier): Session? {
         val today = LocalDate.now().toEpochDay()
