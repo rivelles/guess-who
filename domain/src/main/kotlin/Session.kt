@@ -1,5 +1,5 @@
 data class Session
-private constructor(
+constructor(
     val userIdentifier: UserIdentifier,
     val sessionStartedDate: SessionDate,
     var sessionFinishedDate: SessionDate?,
