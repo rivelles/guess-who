@@ -5,9 +5,11 @@ import UserIdentifier
 import commands.CommandHandler
 import commands.CreateSessionCommand
 import java.lang.IllegalStateException
+import org.springframework.stereotype.Component
 import repositories.QuestionRepository
 import repositories.SessionRepository
 
+@Component
 class CreateSessionCommandHandler(
     private val sessionRepository: SessionRepository,
     private val questionRepository: QuestionRepository

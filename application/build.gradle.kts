@@ -21,7 +21,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.valiktor:valiktor-core:0.12.0")
-    implementation("io.r2dbc:r2dbc-postgresql:1.0.0")
+    implementation("org.postgresql:r2dbc-postgresql:1.0.0.RELEASE")
     implementation(project(":domain"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.kotest:kotest-runner-junit5:5.5.4")
