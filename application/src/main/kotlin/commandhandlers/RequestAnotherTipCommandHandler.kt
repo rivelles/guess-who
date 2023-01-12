@@ -1,4 +1,4 @@
-package commandhandlers
+package org.rivelles.commandhandlers
 
 import commands.CommandHandler
 import commands.RequestAnotherTipCommand

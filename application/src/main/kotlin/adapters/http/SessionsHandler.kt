@@ -1,8 +1,8 @@
 package org.rivelles.adapters.http
 
 import UserIdentifier
-import commandhandlers.CreateSessionCommandHandler
 import commands.CreateSessionCommand
+import org.rivelles.commandhandlers.CreateSessionCommandHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 

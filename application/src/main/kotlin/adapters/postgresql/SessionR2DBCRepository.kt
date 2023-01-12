@@ -1,4 +1,4 @@
-package adapters.postgresql
+package org.rivelles.adapters.postgresql
 
 import Question
 import QuestionAnswer
