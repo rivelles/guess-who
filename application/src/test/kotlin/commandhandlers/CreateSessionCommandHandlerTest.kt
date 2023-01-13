@@ -10,6 +10,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.*
 import java.lang.RuntimeException
 import java.time.LocalDate
+import org.rivelles.commandhandlers.CreateSessionCommandHandler
 import repositories.QuestionRepository
 import repositories.SessionRepository
 

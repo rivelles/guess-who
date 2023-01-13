@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.lang.RuntimeException
+import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
 import repositories.SessionRepository
 
 class AnswerQuestionForSessionCommandHandlerTest :

@@ -13,6 +13,7 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import java.lang.RuntimeException
 import java.time.LocalDate
+import org.rivelles.commandhandlers.RequestAnotherTipCommandHandler
 import repositories.SessionRepository
 
 class RequestAnotherTipCommandHandlerTest :
