@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.spring.SpringListener
 import org.rivelles.GuessWhoApplication
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.context.ApplicationContext
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.TestPropertySource
@@ -12,6 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 
 @ContextConfiguration(classes = [(GuessWhoApplication::class)])
 @TestPropertySource("classpath:application.properties")
+@WebFluxTest
 class SessionsRouterIT : FunSpec() {
     override fun listeners() = listOf(SpringListener)
 
