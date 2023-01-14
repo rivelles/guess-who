@@ -20,7 +20,7 @@ class SessionsRouterIT : FunSpec() {
     lateinit var client: WebTestClient
 
     init {
-        beforeAny { client = WebTestClient.bindToServer().baseUrl("http://localhost:8080").build() }
+        beforeAny { client = WebTestClient.bindToApplicationContext(applicationContext).build() }
         test("Should run") { true shouldBe true }
         test("Should have webclient") {
             client.post().uri("/sessions").exchange().expectStatus().is4xxClientError
