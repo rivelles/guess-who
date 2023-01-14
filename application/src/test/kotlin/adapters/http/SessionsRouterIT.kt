@@ -1,7 +1,7 @@
 package adapters.http
 
 import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.spring.SpringListener
 import org.rivelles.GuessWhoApplication
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,8 +23,8 @@ class SessionsRouterIT : FunSpec() {
 
     init {
         beforeAny { client = WebTestClient.bindToApplicationContext(applicationContext).build() }
-        test("Should run") { true shouldBe true }
-        test("Should have webclient") {
+        test("Should run") { applicationContext shouldNotBe null }
+        test("When creating session with empty body, should receive client error") {
             client.post().uri("/sessions").exchange().expectStatus().is4xxClientError
         }
     }
