@@ -31,6 +31,7 @@ dependencies {
     testImplementation("io.kotest:kotest-property:5.5.4")
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("io.kotest:kotest-extensions-spring:4.4.3")
+    testImplementation("org.testcontainers:postgresql:1.17.6")
     testImplementation(testFixtures(project(":domain")))
 }
 
