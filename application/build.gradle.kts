@@ -24,6 +24,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("org.valiktor:valiktor-core:0.12.0")
     implementation("org.postgresql:r2dbc-postgresql:1.0.0.RELEASE")
+    implementation("org.flywaydb:flyway-core:9.11.0")
     implementation(project(":domain"))
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

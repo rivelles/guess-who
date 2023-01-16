@@ -6,11 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.containers.PostgreSQLContainer
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
+@TestPropertySource
 class SessionsRouterIT : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
@@ -19,12 +21,13 @@ class SessionsRouterIT : StringSpec() {
 
     private val postgreSQLContainer: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:11.1")
-            .withDatabaseName("integration-tests-db")
+            .withDatabaseName("guess_who")
             .withUsername("user")
             .withPassword("password")
 
     init {
         postgreSQLContainer.start()
+        System.setProperty("spring.r2dbc.url", postgreSQLContainer.jdbcUrl.replace("jdbc", "r2dbc"))
 
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")

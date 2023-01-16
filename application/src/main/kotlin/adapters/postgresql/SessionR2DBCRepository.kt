@@ -23,12 +23,12 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
         return databaseClient
             .sql {
                 """
-            SELECT * FROM sessions s
-            INNER JOIN questions q ON s.question_id = q.id
-            INNER JOIN showed_tips st ON s.id = st.session_id
-            INNER JOIN question_tips qt ON q.id = qt.question_id
-            WHERE user_identifier = :user_identifier 
-            AND session_started_date = := session_started_date
+            SELECT * FROM sessions s 
+            INNER JOIN questions q ON s.question_id = q.id 
+            INNER JOIN showed_tips st ON s.id = st.session_id 
+            INNER JOIN question_tips qt ON q.id = qt.question_id 
+            WHERE s.user_identifier = :user_identifier  
+            AND s.session_started_date = :session_started_date
         """.trimIndent()
             }
             .bind("user_identifier", userIdentifier.userIp)
@@ -41,13 +41,13 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                                 "Couldn't find question tips for user session"))
                 val showedTips =
                     QuestionTips(
-                        row.get("st.tip", ArrayList<String>().javaClass)
+                        row.get("qt.tip", ArrayList<String>().javaClass)
                             ?: throw RuntimeException("Couldn't find showed tips for user session"))
                 val question =
                     Question(
                         questionId =
                             QuestionId(
-                                row.get("q.id", UUID::class.java)
+                                row.get("q.external_id", UUID::class.java)
                                     ?: throw RuntimeException(
                                         "Couldn't find question ID for user session")),
                         questionDescription =
@@ -80,7 +80,8 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                     showedTips = showedTips)
             }
             .one()
-            .block()
+            .toFuture()
+            .get()
     }
 
     override fun save(session: Session) {
@@ -88,7 +89,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             .sql {
                 """
             INSERT INTO sessions (user_identifier, session_started_date, question_id) 
-            VALUES (:user_identifier, session_started_date, question_id)
+            VALUES (:user_identifier, :session_started_date, :question_id)
         """.trimIndent()
             }
             .bind("user_identifier", session.userIdentifier.userIp)

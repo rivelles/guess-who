@@ -1,0 +1,10 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost/guess_who
+    username: user
+    password:  password
+    name: guess_who
+  flyway:
+    enabled: true
+    locations: classpath:migration
+    schemas: guess_who
