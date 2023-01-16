@@ -12,7 +12,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
-@TestPropertySource
+@TestPropertySource(locations = ["classpath:application.yaml"])
 class SessionsRouterIT : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
