@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("com.diffplug.spotless") version "6.12.0"
-    id("org.springframework.boot") version "3.0.0"
+    id("org.springframework.boot") version "2.7.7"
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm") version "1.6.21"
     kotlin("plugin.spring") version "1.6.21"
@@ -23,7 +23,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("org.valiktor:valiktor-core:0.12.0")
-    implementation("org.postgresql:r2dbc-postgresql:1.0.0.RELEASE")
+    implementation("io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE")
     implementation("org.flywaydb:flyway-core:9.11.0")
     implementation(project(":domain"))
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -34,6 +34,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.2")
     testImplementation("io.kotest.extensions:kotest-extensions-spring:1.1.2")
     testImplementation("org.testcontainers:postgresql:1.17.6")
+    testImplementation("org.postgresql:postgresql:42.5.1")
     testImplementation(testFixtures(project(":domain")))
 }
 

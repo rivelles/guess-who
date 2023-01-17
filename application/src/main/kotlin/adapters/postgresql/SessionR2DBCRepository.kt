@@ -19,7 +19,7 @@ import repositories.SessionRepository
 @Repository
 class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionRepository {
     override fun findTodaySessionForUser(userIdentifier: UserIdentifier): Session? {
-        val today = LocalDate.now().toEpochDay()
+        val today = LocalDate.now()
         return databaseClient
             .sql {
                 """

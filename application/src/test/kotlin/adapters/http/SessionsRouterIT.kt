@@ -28,6 +28,7 @@ class SessionsRouterIT : StringSpec() {
     init {
         postgreSQLContainer.start()
         System.setProperty("spring.r2dbc.url", postgreSQLContainer.jdbcUrl.replace("jdbc", "r2dbc"))
+        System.setProperty("spring.flyway.url", postgreSQLContainer.jdbcUrl)
 
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")

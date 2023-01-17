@@ -5,6 +5,7 @@ spring:
     password:  password
     name: guess_who
   flyway:
-    enabled: true
-    locations: classpath:migrations
-    schemas: guess_who
+    url: jdbc:postgresql://localhost:5432/guess_who
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
+    baseline-on-migrate: true
