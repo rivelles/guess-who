@@ -79,7 +79,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                     question = question,
                     showedTips = showedTips)
             }
-            .one()
+            .first()
             .toFuture()
             .get()
     }

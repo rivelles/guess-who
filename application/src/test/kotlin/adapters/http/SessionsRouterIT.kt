@@ -1,7 +1,10 @@
 package org.rivelles.adapters.http
 
+import fixtures.aQuestionWithOneTip
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.spring.SpringExtension
+import java.time.LocalDate
+import java.util.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
@@ -9,6 +12,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.containers.PostgreSQLContainer
+import repositories.QuestionRepository
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -18,6 +22,7 @@ class SessionsRouterIT : StringSpec() {
     override fun extensions() = listOf(SpringExtension)
 
     @Autowired lateinit var webTestClient: WebTestClient
+    @Autowired lateinit var questionRepository: QuestionRepository
 
     private val postgreSQLContainer: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:11.1")
@@ -32,6 +37,8 @@ class SessionsRouterIT : StringSpec() {
 
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")
+            val question = aQuestionWithOneTip(UUID.randomUUID(), "Tip test", LocalDate.now())
+            questionRepository.save(question)
 
             webTestClient
                 .post()

@@ -30,4 +30,13 @@ fun aQuestionWithOneTip(tip: String): Question =
         QuestionImage("http://fakeUrl.com/image"),
         QuestionDateOfAppearance(LocalDate.MAX))
 
+fun aQuestionWithOneTip(id: UUID, tip: String, dateOfAppearance: LocalDate): Question =
+    Question(
+        QuestionId(id),
+        QuestionDescription("Question"),
+        QuestionAnswer("Answer"),
+        QuestionTips(listOf(tip)),
+        QuestionImage("http://fakeUrl.com/image"),
+        QuestionDateOfAppearance(dateOfAppearance))
+
 fun anUserIdentifier(): UserIdentifier = UserIdentifier("168.0.0.1")

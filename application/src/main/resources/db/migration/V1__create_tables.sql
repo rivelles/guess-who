@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS questions (
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-                                        id INT PRIMARY KEY,
-                                        external_id VARCHAR(40) UNIQUE NOT NULL,
+    id INT PRIMARY KEY,
+    external_id VARCHAR(40) UNIQUE NOT NULL,
     question_id INT NOT NULL,
     user_identifier VARCHAR(200) NOT NULL,
     session_started_date TIMESTAMP,
