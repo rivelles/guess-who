@@ -9,7 +9,6 @@ import QuestionImage
 import QuestionTips
 import java.time.LocalDate
 import java.util.*
-import kotlin.collections.List
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import repositories.QuestionRepository
@@ -30,12 +29,8 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
             .fetch()
             .all()
             .map { rows ->
-                val tipsList = rows["tip"]
-                var questionTips = mutableListOf<String>()
-                if (tipsList is List<*>) {
-                    questionTips = tipsList.stream().map { it.toString() }.toList()
-                }
-                val questionId = UUID.fromString(rows["id"].toString())
+                val tips = rows["tip"].toString()
+                val questionId = UUID.fromString(rows["question_id"].toString())
                 val description = rows["description"].toString()
                 val answer = rows["answer"].toString()
                 val image = rows["image"].toString()
@@ -46,11 +41,15 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                     QuestionId(questionId),
                     QuestionDescription(description),
                     QuestionAnswer(answer),
-                    QuestionTips(questionTips),
+                    QuestionTips(listOf(tips)),
                     QuestionImage(image),
                     QuestionDateOfAppearance(dateOfAppearance))
             }
-            .elementAt(0)
+            .reduce { q1, q2 ->
+                val questionTips =
+                    QuestionTips(listOf(q1.questionTips.tips[0], q2.questionTips.tips[0]))
+                q1.copy(questionTips = questionTips)
+            }
             .toFuture()
             .get()
     }

@@ -88,10 +88,11 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
         databaseClient
             .sql {
                 """
-            INSERT INTO sessions (user_identifier, session_started_date, question_id) 
-            VALUES (:user_identifier, :session_started_date, :question_id)
+            INSERT INTO sessions (id, user_identifier, session_started_date, question_id) 
+            VALUES (:id, :user_identifier, :session_started_date, :question_id)
         """.trimIndent()
             }
+            .bind("id", UUID.randomUUID().toString())
             .bind("user_identifier", session.userIdentifier.userIp)
             .bind("session_started_date", session.sessionStartedDate.date)
             .bind("question_id", session.question.questionId.id.toString())

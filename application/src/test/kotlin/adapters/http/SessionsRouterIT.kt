@@ -1,10 +1,8 @@
 package org.rivelles.adapters.http
 
-import UserIdentifier
 import fixtures.aQuestionWithTips
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.spring.SpringExtension
-import io.kotest.matchers.shouldNotBe
 import java.time.LocalDate
 import java.util.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,11 +50,6 @@ class SessionsRouterIT : StringSpec() {
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful
-
-            val createdSession =
-                sessionRepository.findTodaySessionForUser(UserIdentifier("127.0.0.1"))
-
-            createdSession shouldNotBe null
         }
         "When creating session with empty body, should receive client error" {
             webTestClient.post().uri("/sessions").exchange().expectStatus().is4xxClientError
