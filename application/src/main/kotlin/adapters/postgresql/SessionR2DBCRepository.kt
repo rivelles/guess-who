@@ -25,8 +25,8 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                 """
             SELECT * FROM sessions s 
             INNER JOIN questions q ON s.question_id = q.id 
-            INNER JOIN showed_tips st ON s.id = st.session_id 
             INNER JOIN question_tips qt ON q.id = qt.question_id 
+            LEFT OUTER JOIN showed_tips st ON s.id = st.session_id 
             WHERE s.user_identifier = :user_identifier  
             AND s.session_started_date = :session_started_date
         """.trimIndent()
@@ -47,7 +47,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                     Question(
                         questionId =
                             QuestionId(
-                                row.get("q.external_id", UUID::class.java)
+                                row.get("q.id", UUID::class.java)
                                     ?: throw RuntimeException(
                                         "Couldn't find question ID for user session")),
                         questionDescription =
@@ -93,8 +93,11 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
         """.trimIndent()
             }
             .bind("user_identifier", session.userIdentifier.userIp)
-            .bind("session_started_date", session.sessionStartedDate.date.toEpochDay())
+            .bind("session_started_date", session.sessionStartedDate.date)
             .bind("question_id", session.question.questionId.id.toString())
             .fetch()
+            .one()
+            .toFuture()
+            .get()
     }
 }

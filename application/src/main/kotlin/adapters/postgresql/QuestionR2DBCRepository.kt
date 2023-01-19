@@ -7,12 +7,10 @@ import QuestionDescription
 import QuestionId
 import QuestionImage
 import QuestionTips
-import io.r2dbc.spi.Statement
 import java.time.LocalDate
 import java.util.*
 import kotlin.collections.List
 import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.r2dbc.core.ExecuteFunction
 import org.springframework.stereotype.Repository
 import repositories.QuestionRepository
 
@@ -30,18 +28,19 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
             }
             .bind("date_appearance", today)
             .fetch()
-            .one()
+            .all()
             .map { rows ->
                 val tipsList = rows["tip"]
                 var questionTips = mutableListOf<String>()
                 if (tipsList is List<*>) {
                     questionTips = tipsList.stream().map { it.toString() }.toList()
                 }
-                val questionId = UUID.fromString(rows["external_id"].toString())
+                val questionId = UUID.fromString(rows["id"].toString())
                 val description = rows["description"].toString()
                 val answer = rows["answer"].toString()
                 val image = rows["image"].toString()
-                val dateOfAppearance = LocalDate.parse(rows["date_appearance"].toString())
+                val dateOfAppearance =
+                    LocalDate.parse(rows["date_appearance"].toString().split("T")[0])
 
                 Question(
                     QuestionId(questionId),
@@ -51,33 +50,30 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                     QuestionImage(image),
                     QuestionDateOfAppearance(dateOfAppearance))
             }
+            .elementAt(0)
             .toFuture()
             .get()
     }
 
     override fun save(question: Question) {
-        val questionId =
-            databaseClient
-                .sql {
-                    """
+        databaseClient
+            .sql {
+                """
             INSERT INTO questions
-            (external_id, description, answer, image, date_appearance)
+            (id, description, answer, image, date_appearance)
             VALUES
-            (:external_id, :description, :answer, :image, :date_appearance)
+            (:id, :description, :answer, :image, :date_appearance)
         """.trimIndent()
-                }
-                .filter { statement: Statement?, next: ExecuteFunction ->
-                    statement!!.returnGeneratedValues("id").execute()
-                }
-                .bind("external_id", question.questionId.id)
-                .bind("description", question.questionDescription.description)
-                .bind("answer", question.questionAnswer.answer)
-                .bind("image", question.questionImage.imageUrl)
-                .bind("date_appearance", question.questionDateOfAppearance.dateOfAppearance)
-                .fetch()
-                .one()
-                .toFuture()
-                .get()
+            }
+            .bind("id", question.questionId.id)
+            .bind("description", question.questionDescription.description)
+            .bind("answer", question.questionAnswer.answer)
+            .bind("image", question.questionImage.imageUrl)
+            .bind("date_appearance", question.questionDateOfAppearance.dateOfAppearance)
+            .fetch()
+            .one()
+            .toFuture()
+            .get()
 
         // TODO: Improve bulk insert
         question.questionTips.tips.forEach {
@@ -85,12 +81,12 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                 .sql {
                     """
             INSERT INTO question_tips
-            (external_id, question_id, tip)
+            (id, question_id, tip)
             VALUES
-            (:external_id, ${questionId.get("id")}, :tip)
+            (:id, '${question.questionId.id}', :tip)
         """.trimIndent()
                 }
-                .bind("external_id", question.questionId.id)
+                .bind("id", UUID.randomUUID().toString())
                 .bind("tip", it)
                 .fetch()
                 .one()

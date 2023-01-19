@@ -1,8 +1,10 @@
 package org.rivelles.adapters.http
 
-import fixtures.aQuestionWithOneTip
+import UserIdentifier
+import fixtures.aQuestionWithTips
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.shouldNotBe
 import java.time.LocalDate
 import java.util.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,6 +15,7 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.containers.PostgreSQLContainer
 import repositories.QuestionRepository
+import repositories.SessionRepository
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
@@ -23,6 +26,7 @@ class SessionsRouterIT : StringSpec() {
 
     @Autowired lateinit var webTestClient: WebTestClient
     @Autowired lateinit var questionRepository: QuestionRepository
+    @Autowired lateinit var sessionRepository: SessionRepository
 
     private val postgreSQLContainer: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:11.1")
@@ -37,7 +41,7 @@ class SessionsRouterIT : StringSpec() {
 
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")
-            val question = aQuestionWithOneTip(UUID.randomUUID(), "Tip test", LocalDate.now())
+            val question = aQuestionWithTips(LocalDate.now(), listOf("Tip 1", "Tip 2"))
             questionRepository.save(question)
 
             webTestClient
@@ -48,6 +52,11 @@ class SessionsRouterIT : StringSpec() {
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful
+
+            val createdSession =
+                sessionRepository.findTodaySessionForUser(UserIdentifier("127.0.0.1"))
+
+            createdSession shouldNotBe null
         }
         "When creating session with empty body, should receive client error" {
             webTestClient.post().uri("/sessions").exchange().expectStatus().is4xxClientError

@@ -1,4 +1,4 @@
-import fixtures.aQuestionWithOneTip
+import fixtures.aQuestionWithTips
 import fixtures.aQuestionWithoutTips
 import fixtures.anUserIdentifier
 import io.kotest.assertions.throwables.shouldThrow
@@ -37,7 +37,7 @@ class SessionTest :
             `when`("The number of showed tips is lower than the total number of tips") {
                 then("Should show another tip") {
                     val tip = "Test tip"
-                    val questionWithOneTip = aQuestionWithOneTip(tip)
+                    val questionWithOneTip = aQuestionWithTips(tip)
 
                     val session = Session(userIdentifier, questionWithOneTip)
                     session.requestOneMoreTip()
@@ -48,7 +48,7 @@ class SessionTest :
             `when`("The number of showed tips is equal than the total number of tips") {
                 then("Should throw exception") {
                     val tip = "Test tip"
-                    val questionWithOneTip = aQuestionWithOneTip(tip)
+                    val questionWithOneTip = aQuestionWithTips(tip)
 
                     val session = Session(userIdentifier, questionWithOneTip)
                     session.requestOneMoreTip()

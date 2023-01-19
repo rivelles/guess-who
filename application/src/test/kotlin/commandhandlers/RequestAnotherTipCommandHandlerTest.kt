@@ -2,7 +2,7 @@ package commandhandlers
 
 import Session
 import commands.RequestAnotherTipCommand
-import fixtures.aQuestionWithOneTip
+import fixtures.aQuestionWithTips
 import fixtures.anUserIdentifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -20,7 +20,7 @@ class RequestAnotherTipCommandHandlerTest :
     BehaviorSpec({
         val sessionRepository = mockk<SessionRepository>(relaxed = true)
 
-        val question = aQuestionWithOneTip("Test tip")
+        val question = aQuestionWithTips("Test tip")
         val userIdentifier = anUserIdentifier()
 
         val commandHandler = RequestAnotherTipCommandHandler(sessionRepository)
