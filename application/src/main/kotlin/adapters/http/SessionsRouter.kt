@@ -10,6 +10,10 @@ class SessionsRouter {
 
     @Bean
     fun coRoute(sessionsHandler: SessionsHandler) = coRouter {
-        (accept(APPLICATION_JSON) and "/sessions").nest { POST("").invoke(sessionsHandler::save) }
+        (accept(APPLICATION_JSON) and "/sessions").nest {
+            POST("").invoke(sessionsHandler::save)
+
+            POST("/{id}:answer").invoke(sessionsHandler::answer)
+        }
     }
 }
