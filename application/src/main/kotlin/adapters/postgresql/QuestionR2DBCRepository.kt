@@ -51,9 +51,8 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                         QuestionDateOfAppearance(dateOfAppearance))
                 }
                 .reduce { q1, q2 ->
-                    val questionTips =
-                        QuestionTips(listOf(q1.questionTips.tips[0], q2.questionTips.tips[0]))
-                    q1.copy(questionTips = questionTips)
+                    q1.copy(
+                        questionTips = QuestionTips(q1.questionTips.tips + q2.questionTips.tips))
                 }
                 .awaitSingleOrNull()
         }
