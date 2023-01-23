@@ -27,7 +27,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             databaseClient
                 .sql {
                     """
-            SELECT * FROM sessions s 
+            SELECT s.id, s.question_id, user_identifier, session_started_date, session_finished_date, description, answer, image, date_appearance, tip, tip_id FROM sessions s 
             INNER JOIN questions q ON s.question_id = q.id 
             LEFT OUTER JOIN question_tips qt ON q.id = qt.question_id 
             LEFT OUTER JOIN showed_tips st ON s.id = st.session_id 
@@ -48,8 +48,8 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                             LocalDate.parse(it.toString().split("T")[0])
                         }
 
-                    val tips = row["tip"].toString()
-                    val questionId = UUID.fromString(row["q.id"].toString())
+                    val tips = row["tip"]?.toString()
+                    val questionId = UUID.fromString(row["question_id"].toString())
                     val description = row["description"].toString()
                     val answer = row["answer"].toString()
                     val image = row["image"].toString()
@@ -63,7 +63,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                             QuestionId(questionId),
                             QuestionDescription(description),
                             QuestionAnswer(answer),
-                            QuestionTips(listOf(tips)),
+                            QuestionTips(tips?.let { listOf(it) } ?: emptyList()),
                             QuestionImage(image),
                             QuestionDateOfAppearance(dateOfAppearance))
 
