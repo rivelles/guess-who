@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     question_id VARCHAR(40) NOT NULL,
     user_identifier VARCHAR(200) NOT NULL,
     session_started_date TIMESTAMP,
+    session_finished_date TIMESTAMP,
     CONSTRAINT fk_question
     FOREIGN KEY (question_id) REFERENCES questions (id)
     );

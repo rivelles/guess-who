@@ -31,6 +31,10 @@ class SessionsHandler(
     }
 
     suspend fun answer(serverRequest: ServerRequest): ServerResponse {
+        val userIdentifier =
+            serverRequest.pathVariable("userIdentifier").ifEmpty {
+                return ServerResponse.badRequest().buildAndAwait()
+            }
         val createSessionForUserRequest =
             serverRequest.awaitBodyOrNull(AnswerQuestionForSessionRequest::class)
 
@@ -39,7 +43,7 @@ class SessionsHandler(
                 .bodyValueAndAwait(
                     answerQuestionForSessionCommandHandler.handle(
                         AnswerQuestionForSessionCommand(
-                            UserIdentifier(request.userIdentifier),
+                            UserIdentifier(userIdentifier!!),
                             QuestionAnswer(request.providedAnswer))))
         }
             ?: ServerResponse.badRequest().buildAndAwait()

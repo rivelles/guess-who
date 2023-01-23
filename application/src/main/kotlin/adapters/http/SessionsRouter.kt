@@ -13,7 +13,7 @@ class SessionsRouter {
         (accept(APPLICATION_JSON) and "/sessions").nest {
             POST("").invoke(sessionsHandler::save)
 
-            POST("/{id}:answer").invoke(sessionsHandler::answer)
+            POST("/{userIdentifier}:answer").invoke(sessionsHandler::answer)
         }
     }
 }

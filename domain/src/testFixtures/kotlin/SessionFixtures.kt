@@ -21,6 +21,15 @@ fun aQuestionWithoutTips(): Question =
         QuestionImage("http://fakeUrl.com/image"),
         QuestionDateOfAppearance(LocalDate.MAX))
 
+fun aQuestionWithoutTips(dateOfAppearance: LocalDate): Question =
+    Question(
+        QuestionId(UUID.randomUUID()),
+        QuestionDescription("Question"),
+        QuestionAnswer("Answer"),
+        QuestionTips(emptyList()),
+        QuestionImage("http://fakeUrl.com/image"),
+        QuestionDateOfAppearance(dateOfAppearance))
+
 fun aQuestionWithTips(tip: String): Question =
     Question(
         QuestionId(UUID.randomUUID()),

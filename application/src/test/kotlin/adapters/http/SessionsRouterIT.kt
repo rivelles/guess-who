@@ -1,9 +1,13 @@
 package org.rivelles.adapters.http
 
+import Session
+import UserIdentifier
 import fixtures.aQuestionWithTips
+import fixtures.aQuestionWithoutTips
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.spring.SpringExtension
 import java.time.LocalDate
+import org.rivelles.adapters.http.requests.AnswerQuestionForSessionRequest
 import org.rivelles.adapters.http.requests.CreateSessionForUserRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
@@ -15,6 +19,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 import repositories.QuestionRepository
 import repositories.SessionRepository
 
+@Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestPropertySource(locations = ["classpath:application.yaml"])
@@ -37,6 +42,9 @@ class SessionsRouterIT : StringSpec() {
         System.setProperty("spring.r2dbc.url", postgreSQLContainer.jdbcUrl.replace("jdbc", "r2dbc"))
         System.setProperty("spring.flyway.url", postgreSQLContainer.jdbcUrl)
 
+        "When creating session with empty body, should receive client error" {
+            webTestClient.post().uri("/sessions").exchange().expectStatus().is4xxClientError
+        }
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")
             val question = aQuestionWithTips(LocalDate.now(), listOf("Tip 1", "Tip 2"))
@@ -51,8 +59,22 @@ class SessionsRouterIT : StringSpec() {
                 .expectStatus()
                 .is2xxSuccessful
         }
-        "When creating session with empty body, should receive client error" {
-            webTestClient.post().uri("/sessions").exchange().expectStatus().is4xxClientError
+        "Should answer to question in session" {
+            val requestBody = AnswerQuestionForSessionRequest("Answer")
+            val question = aQuestionWithoutTips(LocalDate.now())
+            questionRepository.save(question)
+
+            val session = Session(UserIdentifier("127.0.0.2"), question)
+            sessionRepository.save(session)
+
+            webTestClient
+                .post()
+                .uri("/sessions/127.0.0.2:answer")
+                .contentType(APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful
         }
     }
 }

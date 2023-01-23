@@ -33,14 +33,14 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                 .bind("date_appearance", today)
                 .fetch()
                 .all()
-                .map { rows ->
-                    val tips = rows["tip"].toString()
-                    val questionId = UUID.fromString(rows["question_id"].toString())
-                    val description = rows["description"].toString()
-                    val answer = rows["answer"].toString()
-                    val image = rows["image"].toString()
+                .map { row ->
+                    val tips = row["tip"].toString()
+                    val questionId = UUID.fromString(row["question_id"].toString())
+                    val description = row["description"].toString()
+                    val answer = row["answer"].toString()
+                    val image = row["image"].toString()
                     val dateOfAppearance =
-                        LocalDate.parse(rows["date_appearance"].toString().split("T")[0])
+                        LocalDate.parse(row["date_appearance"].toString().split("T")[0])
 
                     Question(
                         QuestionId(questionId),
