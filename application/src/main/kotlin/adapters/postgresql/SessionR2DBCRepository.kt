@@ -39,52 +39,8 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                 .bind("session_started_date", today)
                 .fetch()
                 .all()
-                .map { row ->
-                    val userIdentifier = row["user_identifier"].toString()
-                    val sessionStartedDate =
-                        LocalDate.parse(row["session_started_date"].toString().split("T")[0])
-                    val sessionFinishedDate =
-                        row["session_finished_date"]?.let {
-                            LocalDate.parse(it.toString().split("T")[0])
-                        }
-
-                    val tips = row["tip"]?.toString()
-                    val questionId = UUID.fromString(row["question_id"].toString())
-                    val description = row["description"].toString()
-                    val answer = row["answer"].toString()
-                    val image = row["image"].toString()
-                    val dateOfAppearance =
-                        LocalDate.parse(row["date_appearance"].toString().split("T")[0])
-
-                    val isTipShowed = row["tip_id"] != null
-
-                    val question =
-                        Question(
-                            QuestionId(questionId),
-                            QuestionDescription(description),
-                            QuestionAnswer(answer),
-                            QuestionTips(tips?.let { listOf(it) } ?: emptyList()),
-                            QuestionImage(image),
-                            QuestionDateOfAppearance(dateOfAppearance))
-
-                    Session(
-                        UserIdentifier(userIdentifier),
-                        SessionDate(sessionStartedDate),
-                        sessionFinishedDate?.let { SessionDate(it) },
-                        question,
-                        QuestionTips(
-                            tips.takeIf { isTipShowed }?.let { listOf(it) } ?: emptyList()))
-                }
-                .reduce { session1, session2 ->
-                    val newQuestionTips =
-                        session1.question.questionTips.tips + session2.question.questionTips.tips
-                    val newShowedTips = session1.showedTips.tips + session2.showedTips.tips
-
-                    session1.copy(
-                        question =
-                            session1.question.copy(questionTips = QuestionTips(newQuestionTips)),
-                        showedTips = session1.showedTips.copy(newShowedTips))
-                }
+                .map { it.toSession() }
+                .reduce { session1, session2 -> session1.mergeTips(session2) }
                 .awaitSingleOrNull()
         }
     }
@@ -106,4 +62,48 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                 .awaitRowsUpdated()
         }
     }
+
+    private fun Session.mergeTips(session: Session): Session {
+        val newQuestionTips = this.question.questionTips.tips + session.question.questionTips.tips
+        val newShowedTips = this.showedTips.tips + session.showedTips.tips
+
+        return this.copy(
+            question = this.question.copy(questionTips = QuestionTips(newQuestionTips)),
+            showedTips = this.showedTips.copy(newShowedTips))
+    }
+    private fun MutableMap<String, Any>.toQuestion(): Question {
+        val questionId = UUID.fromString(this["question_id"].toString())
+        val description = this["description"].toString()
+        val answer = this["answer"].toString()
+        val image = this["image"].toString()
+        val dateOfAppearance = LocalDate.parse(this["date_appearance"].toString().split("T")[0])
+        val tip = this["tip"]?.toString()
+
+        return Question(
+            QuestionId(questionId),
+            QuestionDescription(description),
+            QuestionAnswer(answer),
+            QuestionTips(tip?.let { listOf(it) } ?: emptyList()),
+            QuestionImage(image),
+            QuestionDateOfAppearance(dateOfAppearance))
+    }
+    private fun MutableMap<String, Any>.toSession(): Session {
+        val question = this.toQuestion()
+
+        val userIdentifier = this["user_identifier"].toString()
+        val sessionStartedDate =
+            LocalDate.parse(this["session_started_date"].toString().split("T")[0])
+        val sessionFinishedDate =
+            this["session_finished_date"]?.let { LocalDate.parse(it.toString().split("T")[0]) }
+
+        return Session(
+            UserIdentifier(userIdentifier),
+            SessionDate(sessionStartedDate),
+            sessionFinishedDate?.let { SessionDate(it) },
+            question,
+            QuestionTips(
+                question.questionTips.tips.takeIf { this.containsShowedTip() } ?: emptyList()))
+    }
+
+    fun MutableMap<String, Any>.containsShowedTip() = this["tip_id"] != null
 }
