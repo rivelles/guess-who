@@ -33,27 +33,8 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                 .bind("date_appearance", today)
                 .fetch()
                 .all()
-                .map { row ->
-                    val tips = row["tip"].toString()
-                    val questionId = UUID.fromString(row["question_id"].toString())
-                    val description = row["description"].toString()
-                    val answer = row["answer"].toString()
-                    val image = row["image"].toString()
-                    val dateOfAppearance =
-                        LocalDate.parse(row["date_appearance"].toString().split("T")[0])
-
-                    Question(
-                        QuestionId(questionId),
-                        QuestionDescription(description),
-                        QuestionAnswer(answer),
-                        QuestionTips(listOf(tips)),
-                        QuestionImage(image),
-                        QuestionDateOfAppearance(dateOfAppearance))
-                }
-                .reduce { q1, q2 ->
-                    q1.copy(
-                        questionTips = QuestionTips(q1.questionTips.tips + q2.questionTips.tips))
-                }
+                .map { row -> row.toQuestion() }
+                .reduce { question1, question2 -> question1.mergeQuestionTips(question2) }
                 .awaitSingleOrNull()
         }
     }
@@ -98,4 +79,24 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
             }
         }
     }
+
+    private fun MutableMap<String, Any>.toQuestion(): Question {
+        val questionId = UUID.fromString(this["question_id"].toString())
+        val description = this["description"].toString()
+        val answer = this["answer"].toString()
+        val image = this["image"].toString()
+        val dateOfAppearance = LocalDate.parse(this["date_appearance"].toString().split("T")[0])
+        val tip = this["tip"]?.toString()
+
+        return Question(
+            QuestionId(questionId),
+            QuestionDescription(description),
+            QuestionAnswer(answer),
+            QuestionTips(tip?.let { listOf(it) } ?: emptyList()),
+            QuestionImage(image),
+            QuestionDateOfAppearance(dateOfAppearance))
+    }
+
+    private fun Question.mergeQuestionTips(question: Question): Question =
+        this.copy(questionTips = QuestionTips(this.questionTips.tips + question.questionTips.tips))
 }
