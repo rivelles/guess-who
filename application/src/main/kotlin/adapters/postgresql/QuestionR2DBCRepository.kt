@@ -15,10 +15,15 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.r2dbc.core.awaitRowsUpdated
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.ReactiveTransactionManager
+import org.springframework.transaction.reactive.TransactionalOperator
 import repositories.QuestionRepository
 
 @Repository
-class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepository {
+class QuestionR2DBCRepository(
+    val databaseClient: DatabaseClient,
+    val tm: ReactiveTransactionManager
+) : QuestionRepository {
     override fun getQuestionOfTheDay(): Question? {
         val today = LocalDate.now()
         return runBlocking {
@@ -41,42 +46,46 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
 
     override fun save(question: Question) {
         runBlocking {
-            val questionCreated =
-                databaseClient
-                    .sql {
-                        """
-                            INSERT INTO questions
-                            (id, description, answer, image, date_appearance)
-                            VALUES
-                            (:id, :description, :answer, :image, :date_appearance)
-                        """.trimIndent()
-                    }
-                    .bind("id", question.questionId.id)
-                    .bind("description", question.questionDescription.description)
-                    .bind("answer", question.questionAnswer.answer)
-                    .bind("image", question.questionImage.imageUrl)
-                    .bind("date_appearance", question.questionDateOfAppearance.dateOfAppearance)
-                    .fetch()
-                    .awaitRowsUpdated()
-
-            if (questionCreated < 1) throw RuntimeException("Couldn't create question")
-            question.questionTips.tips.forEach {
-                launch {
-                    databaseClient
-                        .sql {
-                            """
-                                INSERT INTO question_tips
-                                (id, question_id, tip)
-                                VALUES
-                                (:id, '${question.questionId.id}', :tip)
-                            """.trimIndent()
-                        }
-                        .bind("id", UUID.randomUUID().toString())
-                        .bind("tip", it)
-                        .fetch()
-                        .awaitRowsUpdated()
+            val rxtx = TransactionalOperator.create(tm)
+            databaseClient
+                .sql {
+                    """
+                        INSERT INTO questions
+                        (id, description, answer, image, date_appearance)
+                        VALUES
+                        (:id, :description, :answer, :image, :date_appearance)
+                    """.trimIndent()
                 }
-            }
+                .bind("id", question.questionId.id)
+                .bind("description", question.questionDescription.description)
+                .bind("answer", question.questionAnswer.answer)
+                .bind("image", question.questionImage.imageUrl)
+                .bind("date_appearance", question.questionDateOfAppearance.dateOfAppearance)
+                .fetch()
+                .rowsUpdated()
+                .then()
+                .doOnSuccess {
+                    question.questionTips.tips.forEach {
+                        launch {
+                            databaseClient
+                                .sql {
+                                    """
+                                        INSERT INTO question_tips
+                                        (id, question_id, tip)
+                                        VALUES
+                                        (:id, '${question.questionId.id}', :tip)
+                                    """.trimIndent()
+                                }
+                                .bind("id", UUID.randomUUID().toString())
+                                .bind("tip", it)
+                                .fetch()
+                                .awaitRowsUpdated()
+                        }
+                    }
+                }
+                .`as`(rxtx::transactional)
+                .then()
+                .awaitSingleOrNull()
         }
     }
 

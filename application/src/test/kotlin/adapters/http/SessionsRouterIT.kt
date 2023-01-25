@@ -47,7 +47,9 @@ class SessionsRouterIT : StringSpec() {
         }
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")
-            val question = aQuestionWithTips(LocalDate.now(), listOf("Tip 1", "Tip 2"))
+            val question =
+                aQuestionWithTips(
+                    LocalDate.now(), listOf("Tip 1", "Tip 2", "Tip 3", "Tip 4", "Tip 5"))
             questionRepository.save(question)
 
             webTestClient
