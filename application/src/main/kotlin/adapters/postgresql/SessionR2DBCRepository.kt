@@ -27,13 +27,13 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             databaseClient
                 .sql {
                     """
-            SELECT s.id, s.question_id, user_identifier, session_started_date, session_finished_date, description, answer, image, date_appearance, tip, tip_id FROM sessions s 
-            INNER JOIN questions q ON s.question_id = q.id 
-            LEFT OUTER JOIN question_tips qt ON q.id = qt.question_id 
-            LEFT OUTER JOIN showed_tips st ON s.id = st.session_id 
-            WHERE s.user_identifier = :user_identifier  
-            AND s.session_started_date = :session_started_date
-        """.trimIndent()
+                        SELECT s.id, s.question_id, user_identifier, session_started_date, session_finished_date, description, answer, image, date_appearance, tip, tip_id FROM sessions s 
+                        INNER JOIN questions q ON s.question_id = q.id 
+                        LEFT OUTER JOIN question_tips qt ON q.id = qt.question_id 
+                        LEFT OUTER JOIN showed_tips st ON s.id = st.session_id 
+                        WHERE s.user_identifier = :user_identifier  
+                        AND s.session_started_date = :session_started_date
+                    """.trimIndent()
                 }
                 .bind("user_identifier", userIdentifier.userIp)
                 .bind("session_started_date", today)
@@ -50,9 +50,9 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             databaseClient
                 .sql {
                     """
-            INSERT INTO sessions (id, user_identifier, session_started_date, question_id) 
-            VALUES (:id, :user_identifier, :session_started_date, :question_id)
-        """.trimIndent()
+                        INSERT INTO sessions (id, user_identifier, session_started_date, question_id) 
+                        VALUES (:id, :user_identifier, :session_started_date, :question_id)
+                    """.trimIndent()
                 }
                 .bind("id", UUID.randomUUID().toString())
                 .bind("user_identifier", session.userIdentifier.userIp)

@@ -25,10 +25,10 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
             databaseClient
                 .sql {
                     """
-            SELECT * FROM questions q
-            INNER JOIN question_tips qt ON qt.question_id = q.id
-            WHERE date_appearance = :date_appearance
-        """.trimIndent()
+                        SELECT * FROM questions q
+                        INNER JOIN question_tips qt ON qt.question_id = q.id
+                        WHERE date_appearance = :date_appearance
+                    """.trimIndent()
                 }
                 .bind("date_appearance", today)
                 .fetch()
@@ -64,11 +64,11 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                 databaseClient
                     .sql {
                         """
-            INSERT INTO questions
-            (id, description, answer, image, date_appearance)
-            VALUES
-            (:id, :description, :answer, :image, :date_appearance)
-        """.trimIndent()
+                            INSERT INTO questions
+                            (id, description, answer, image, date_appearance)
+                            VALUES
+                            (:id, :description, :answer, :image, :date_appearance)
+                        """.trimIndent()
                     }
                     .bind("id", question.questionId.id)
                     .bind("description", question.questionDescription.description)
@@ -84,11 +84,11 @@ class QuestionR2DBCRepository(val databaseClient: DatabaseClient) : QuestionRepo
                     databaseClient
                         .sql {
                             """
-            INSERT INTO question_tips
-            (id, question_id, tip)
-            VALUES
-            (:id, '${question.questionId.id}', :tip)
-        """.trimIndent()
+                                INSERT INTO question_tips
+                                (id, question_id, tip)
+                                VALUES
+                                (:id, '${question.questionId.id}', :tip)
+                            """.trimIndent()
                         }
                         .bind("id", UUID.randomUUID().toString())
                         .bind("tip", it)
