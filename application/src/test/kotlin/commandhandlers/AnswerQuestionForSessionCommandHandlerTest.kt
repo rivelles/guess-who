@@ -12,8 +12,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.lang.RuntimeException
+import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
-import repositories.SessionRepository
+import reactor.core.publisher.Mono
 
 class AnswerQuestionForSessionCommandHandlerTest :
     BehaviorSpec({
@@ -27,7 +28,7 @@ class AnswerQuestionForSessionCommandHandlerTest :
                 then("Should save session") {
                     val session = Session(userIdentifier, question)
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
-                        session
+                        Mono.just(session)
 
                     val command =
                         AnswerQuestionForSessionCommand(userIdentifier, QuestionAnswer("Answer"))
@@ -40,7 +41,7 @@ class AnswerQuestionForSessionCommandHandlerTest :
                 then("Should not save session") {
                     val session = Session(userIdentifier, question)
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
-                        session
+                        Mono.just(session)
 
                     val command =
                         AnswerQuestionForSessionCommand(
@@ -52,7 +53,8 @@ class AnswerQuestionForSessionCommandHandlerTest :
             }
             `when`("A session is not found for the user") {
                 then("Should throw RuntimeException") {
-                    every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns null
+                    every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
+                        Mono.empty()
 
                     val command =
                         AnswerQuestionForSessionCommand(userIdentifier, QuestionAnswer("Answer"))

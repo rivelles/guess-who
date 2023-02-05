@@ -13,8 +13,8 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import java.time.LocalDate
+import org.rivelles.adapters.persistence.QuestionRepository
 import org.rivelles.commandhandlers.CreateQuestionCommandHandler
-import repositories.QuestionRepository
 
 class CreateQuestionCommandHandlerTest :
     BehaviorSpec({

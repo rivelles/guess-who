@@ -1,34 +1,31 @@
 package org.rivelles.commandhandlers
 
 import Session
-import UserIdentifier
-import commands.CommandHandler
 import commands.CreateSessionCommand
-import java.lang.IllegalStateException
+import org.rivelles.adapters.persistence.QuestionRepository
+import org.rivelles.adapters.persistence.SessionRepository
 import org.springframework.stereotype.Component
-import repositories.QuestionRepository
-import repositories.SessionRepository
+import reactor.core.publisher.Mono
 
 @Component
 class CreateSessionCommandHandler(
     private val sessionRepository: SessionRepository,
     private val questionRepository: QuestionRepository
 ) : CommandHandler<CreateSessionCommand> {
-    override fun handle(command: CreateSessionCommand) {
-        checkIfThereIsASessionTodayFor(command.userIdentifier)
-
-        val questionOfTheDay =
-            questionRepository.getQuestionOfTheDay()
-                ?: throw IllegalStateException("Question of the day not found")
-
-        val session = Session(userIdentifier = command.userIdentifier, question = questionOfTheDay)
-
-        sessionRepository.save(session)
-    }
-
-    private fun checkIfThereIsASessionTodayFor(userIdentifier: UserIdentifier) {
-        sessionRepository.findTodaySessionForUser(userIdentifier)?.let {
-            throw RuntimeException("User already has session for today")
-        }
+    override fun handle(command: CreateSessionCommand): Mono<Int> {
+        return sessionRepository
+            .findTodaySessionForUser(command.userIdentifier)
+            .doOnEach { throw RuntimeException("User already has session for today") }
+            .then()
+            .flatMap {
+                questionRepository
+                    .getQuestionOfTheDay()
+                    .switchIfEmpty(Mono.error(RuntimeException("Question of the day not found")))
+                    .flatMap {
+                        val session =
+                            Session(userIdentifier = command.userIdentifier, question = it!!)
+                        sessionRepository.save(session)
+                    }
+            }
     }
 }

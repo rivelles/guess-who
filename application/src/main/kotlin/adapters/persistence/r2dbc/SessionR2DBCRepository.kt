@@ -1,4 +1,4 @@
-package org.rivelles.adapters.postgresql
+package org.rivelles.adapters.persistence.r2dbc
 
 import Question
 import QuestionAnswer
@@ -12,21 +12,18 @@ import SessionDate
 import UserIdentifier
 import java.time.LocalDate
 import java.util.UUID
-import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.coroutines.runBlocking
+import org.rivelles.adapters.persistence.SessionRepository
 import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.r2dbc.core.awaitRowsUpdated
 import org.springframework.stereotype.Repository
-import repositories.SessionRepository
+import reactor.core.publisher.Mono
 
 @Repository
 class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionRepository {
-    override fun findTodaySessionForUser(userIdentifier: UserIdentifier): Session? {
+    override fun findTodaySessionForUser(userIdentifier: UserIdentifier): Mono<Session?> {
         val today = LocalDate.now()
-        return runBlocking {
-            databaseClient
-                .sql {
-                    """
+        return databaseClient
+            .sql {
+                """
                         SELECT s.id, s.question_id, user_identifier, session_started_date, session_finished_date, description, answer, image, date_appearance, tip, tip_id FROM sessions s 
                         INNER JOIN questions q ON s.question_id = q.id 
                         LEFT OUTER JOIN question_tips qt ON q.id = qt.question_id 
@@ -34,36 +31,33 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
                         WHERE s.user_identifier = :user_identifier  
                         AND s.session_started_date = :session_started_date
                     """.trimIndent()
-                }
-                .bind("user_identifier", userIdentifier.userIp)
-                .bind("session_started_date", today)
-                .fetch()
-                .all()
-                .map { it.toSession() }
-                .reduce { session1, session2 -> session1.mergeTips(session2) }
-                .awaitSingleOrNull()
-        }
+            }
+            .bind("user_identifier", userIdentifier.userIp)
+            .bind("session_started_date", today)
+            .fetch()
+            .all()
+            .mapNotNull { it.toSession() }
+            .reduce { session1, session2 -> session1?.mergeTips(session2) }
     }
 
-    override fun save(session: Session) {
-        runBlocking {
-            databaseClient
-                .sql {
-                    """
+    override fun save(session: Session): Mono<Int> {
+        return databaseClient
+            .sql {
+                """
                         INSERT INTO sessions (id, user_identifier, session_started_date, question_id) 
                         VALUES (:id, :user_identifier, :session_started_date, :question_id)
                     """.trimIndent()
-                }
-                .bind("id", UUID.randomUUID().toString())
-                .bind("user_identifier", session.userIdentifier.userIp)
-                .bind("session_started_date", session.sessionStartedDate.date)
-                .bind("question_id", session.question.questionId.id.toString())
-                .fetch()
-                .awaitRowsUpdated()
-        }
+            }
+            .bind("id", UUID.randomUUID().toString())
+            .bind("user_identifier", session.userIdentifier.userIp)
+            .bind("session_started_date", session.sessionStartedDate.date)
+            .bind("question_id", session.question.questionId.id.toString())
+            .fetch()
+            .rowsUpdated()
     }
 
-    private fun Session.mergeTips(session: Session): Session {
+    private fun Session?.mergeTips(session: Session?): Session? {
+        if (this == null || session == null) return null
         val newQuestionTips = this.question.questionTips.tips + session.question.questionTips.tips
         val newShowedTips = this.showedTips.tips + session.showedTips.tips
 
@@ -87,7 +81,8 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             QuestionImage(image),
             QuestionDateOfAppearance(dateOfAppearance))
     }
-    private fun MutableMap<String, Any>.toSession(): Session {
+    private fun MutableMap<String, Any>.toSession(): Session? {
+        if (this.isEmpty()) return null
         val question = this.toQuestion()
 
         val userIdentifier = this["user_identifier"].toString()

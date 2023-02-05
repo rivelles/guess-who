@@ -9,6 +9,8 @@ import io.kotest.extensions.spring.SpringExtension
 import java.time.LocalDate
 import org.rivelles.adapters.http.requests.AnswerQuestionForSessionRequest
 import org.rivelles.adapters.http.requests.CreateSessionForUserRequest
+import org.rivelles.adapters.persistence.QuestionRepository
+import org.rivelles.adapters.persistence.SessionRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest
@@ -16,8 +18,6 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.testcontainers.containers.PostgreSQLContainer
-import repositories.QuestionRepository
-import repositories.SessionRepository
 
 @Suppress("SpringJavaInjectionPointsAutowiringInspection")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

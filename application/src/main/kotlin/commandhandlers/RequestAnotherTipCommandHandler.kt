@@ -1,21 +1,20 @@
 package org.rivelles.commandhandlers
 
-import commands.CommandHandler
 import commands.RequestAnotherTipCommand
+import org.rivelles.adapters.persistence.SessionRepository
 import org.springframework.stereotype.Component
-import repositories.SessionRepository
+import reactor.core.publisher.Mono
 
 @Component
 class RequestAnotherTipCommandHandler(private val sessionRepository: SessionRepository) :
     CommandHandler<RequestAnotherTipCommand> {
-    override fun handle(command: RequestAnotherTipCommand) {
-        sessionRepository
+    override fun handle(command: RequestAnotherTipCommand): Mono<Int> {
+        return sessionRepository
             .findTodaySessionForUser(command.userIdentifier)
-            ?.let { session ->
-                session.requestOneMoreTip()
-                session
+            .switchIfEmpty(Mono.error(RuntimeException("Session not found for user")))
+            ?.flatMap { session ->
+                session!!.requestOneMoreTip()
+                sessionRepository.save(session)
             }
-            ?.run { sessionRepository.save(this) }
-            ?: throw RuntimeException("Session not found for user")
     }
 }

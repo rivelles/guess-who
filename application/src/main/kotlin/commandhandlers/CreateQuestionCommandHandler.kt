@@ -2,10 +2,9 @@ package org.rivelles.commandhandlers
 
 import Question
 import QuestionId
-import commands.CommandHandler
 import commands.CreateQuestionCommand
+import org.rivelles.adapters.persistence.QuestionRepository
 import org.springframework.stereotype.Component
-import repositories.QuestionRepository
 
 @Component
 class CreateQuestionCommandHandler(private val questionRepository: QuestionRepository) :

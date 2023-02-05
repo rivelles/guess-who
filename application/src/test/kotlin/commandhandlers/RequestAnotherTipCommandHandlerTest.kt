@@ -13,8 +13,9 @@ import io.mockk.mockkStatic
 import io.mockk.verify
 import java.lang.RuntimeException
 import java.time.LocalDate
+import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.commandhandlers.RequestAnotherTipCommandHandler
-import repositories.SessionRepository
+import reactor.core.publisher.Mono
 
 class RequestAnotherTipCommandHandlerTest :
     BehaviorSpec({
@@ -32,7 +33,7 @@ class RequestAnotherTipCommandHandlerTest :
                 then("Should execute successfully") {
                     val session = Session(userIdentifier, question)
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
-                        session
+                        Mono.just(session)
 
                     val command = RequestAnotherTipCommand(userIdentifier)
                     commandHandler.handle(command)
@@ -42,7 +43,8 @@ class RequestAnotherTipCommandHandlerTest :
             }
             `when`("There is no session for user today") {
                 then("Should throw exception") {
-                    every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns null
+                    every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
+                        Mono.empty()
 
                     val exception =
                         shouldThrow<RuntimeException> {

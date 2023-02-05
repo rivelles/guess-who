@@ -10,6 +10,7 @@ import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
 import org.rivelles.commandhandlers.CreateSessionCommandHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
+import reactor.core.publisher.Mono
 
 @Component
 class SessionsHandler(
@@ -17,35 +18,32 @@ class SessionsHandler(
     private val answerQuestionForSessionCommandHandler: AnswerQuestionForSessionCommandHandler
 ) {
 
-    suspend fun save(serverRequest: ServerRequest): ServerResponse {
+    fun save(serverRequest: ServerRequest): Mono<ServerResponse> {
         val createSessionForUserRequest =
-            serverRequest.awaitBodyOrNull(CreateSessionForUserRequest::class)
+            serverRequest.bodyToMono(CreateSessionForUserRequest::class.java)
 
-        return createSessionForUserRequest?.let { request ->
+        return createSessionForUserRequest.flatMap {
             ServerResponse.ok()
-                .bodyValueAndAwait(
+                .body(
                     createSessionCommandHandler.handle(
-                        CreateSessionCommand(UserIdentifier(request.userIdentifier))))
+                        CreateSessionCommand(UserIdentifier(it.userIdentifier))))
         }
-            ?: ServerResponse.badRequest().buildAndAwait()
     }
 
-    suspend fun answer(serverRequest: ServerRequest): ServerResponse {
+    fun answer(serverRequest: ServerRequest): Mono<ServerResponse> {
         val userIdentifier =
             serverRequest.pathVariable("userIdentifier").ifEmpty {
-                return ServerResponse.badRequest().buildAndAwait()
+                return ServerResponse.badRequest().build()
             }
         val createSessionForUserRequest =
-            serverRequest.awaitBodyOrNull(AnswerQuestionForSessionRequest::class)
+            serverRequest.bodyToMono(AnswerQuestionForSessionRequest::class.java)
 
-        return createSessionForUserRequest?.let { request ->
+        return createSessionForUserRequest.flatMap {
             ServerResponse.ok()
-                .bodyValueAndAwait(
+                .body(
                     answerQuestionForSessionCommandHandler.handle(
                         AnswerQuestionForSessionCommand(
-                            UserIdentifier(userIdentifier!!),
-                            QuestionAnswer(request.providedAnswer))))
+                            UserIdentifier(userIdentifier), QuestionAnswer(it.providedAnswer))))
         }
-            ?: ServerResponse.badRequest().buildAndAwait()
     }
 }

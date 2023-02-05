@@ -1,21 +1,23 @@
 package org.rivelles.commandhandlers
 
 import commands.AnswerQuestionForSessionCommand
-import commands.CommandHandler
+import java.lang.RuntimeException
+import org.rivelles.adapters.persistence.SessionRepository
 import org.springframework.stereotype.Component
-import repositories.SessionRepository
+import reactor.core.publisher.Mono
 
 @Component
 class AnswerQuestionForSessionCommandHandler(private val sessionRepository: SessionRepository) :
     CommandHandler<AnswerQuestionForSessionCommand> {
 
-    override fun handle(command: AnswerQuestionForSessionCommand) {
-        sessionRepository.findTodaySessionForUser(command.userIdentifier)?.let { session ->
-            session.answerQuestion(command.providedAnswer)
+    override fun handle(command: AnswerQuestionForSessionCommand): Mono<Unit> {
+        return sessionRepository
+            .findTodaySessionForUser(command.userIdentifier)
+            ?.switchIfEmpty(Mono.error(RuntimeException("")))
+            .map {
+                it!!.answerQuestion(command.providedAnswer)
 
-            sessionRepository.takeIf { session.isFinished() }?.save(session)
-            session
-        }
-            ?: throw RuntimeException("Session not found for user")
+                if (it.isFinished()) sessionRepository.save(it)
+            }
     }
 }
