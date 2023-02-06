@@ -15,17 +15,18 @@ class CreateSessionCommandHandler(
     override fun handle(command: CreateSessionCommand): Mono<Int> {
         return sessionRepository
             .findTodaySessionForUser(command.userIdentifier)
-            .doOnEach { throw RuntimeException("User already has session for today") }
-            .then()
-            .flatMap {
+            .doOnEach {
+                if (it.hasValue()) throw RuntimeException("User already has session for today")
+            }
+            .then(
                 questionRepository
                     .getQuestionOfTheDay()
-                    .switchIfEmpty(Mono.error(RuntimeException("Question of the day not found")))
+                    .switchIfEmpty(
+                        Mono.error(IllegalStateException("Question of the day not found")))
                     .flatMap {
                         val session =
                             Session(userIdentifier = command.userIdentifier, question = it!!)
                         sessionRepository.save(session)
-                    }
-            }
+                    })
     }
 }

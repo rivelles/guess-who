@@ -5,14 +5,15 @@ import commands.CreateSessionCommand
 import fixtures.aQuestionWithoutTips
 import fixtures.anUserIdentifier
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.shouldBe
 import io.mockk.*
-import java.lang.RuntimeException
+import java.time.Duration
 import java.time.LocalDate
+import kotlin.RuntimeException
 import org.rivelles.adapters.persistence.QuestionRepository
 import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.commandhandlers.CreateSessionCommandHandler
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 internal class CreateSessionCommandHandlerTest :
     BehaviorSpec({
@@ -36,12 +37,14 @@ internal class CreateSessionCommandHandlerTest :
 
                     every { questionRepository.getQuestionOfTheDay() } returns Mono.just(question)
 
-                    val expectedSession = Session(userIdentifier, question)
+                    every { sessionRepository.save(any()) } returns Mono.just(1)
 
-                    commandHandler.handle(CreateSessionCommand(userIdentifier)).subscribe {
-                        it shouldBe 1
-                        verify { sessionRepository.save(expectedSession) }
-                    }
+                    val returnedValue = commandHandler.handle(CreateSessionCommand(userIdentifier))
+
+                    StepVerifier.create(returnedValue)
+                        .expectNext(1)
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(2L))
                 }
             }
             `when`("There is already a session for the user in the same day") {
@@ -51,10 +54,11 @@ internal class CreateSessionCommandHandlerTest :
                     every { sessionRepository.findTodaySessionForUser(any()) } returns
                         Mono.just(existingSession)
 
-                    commandHandler
-                        .handle(CreateSessionCommand(userIdentifier))
-                        .doOnError { it.javaClass shouldBe RuntimeException::class.java }
-                        .subscribe { verify { sessionRepository.save(any()) wasNot called } }
+                    val returnedValue = commandHandler.handle(CreateSessionCommand(userIdentifier))
+
+                    StepVerifier.create(returnedValue)
+                        .expectError(RuntimeException::class.java)
+                        .verify()
                 }
             }
             `when`("There is no question of the day") {
@@ -63,10 +67,11 @@ internal class CreateSessionCommandHandlerTest :
 
                     every { questionRepository.getQuestionOfTheDay() } returns Mono.empty()
 
-                    commandHandler
-                        .handle(CreateSessionCommand(userIdentifier))
-                        .doOnError { it.javaClass shouldBe IllegalStateException::class.java }
-                        .subscribe { verify { sessionRepository.save(any()) wasNot called } }
+                    val returnedValue = commandHandler.handle(CreateSessionCommand(userIdentifier))
+
+                    StepVerifier.create(returnedValue)
+                        .expectError(IllegalStateException::class.java)
+                        .verify()
                 }
             }
         }
