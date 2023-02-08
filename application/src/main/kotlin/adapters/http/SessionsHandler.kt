@@ -10,6 +10,7 @@ import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
 import org.rivelles.commandhandlers.CreateSessionCommandHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
+import org.springframework.web.server.ServerWebInputException
 import reactor.core.publisher.Mono
 
 @Component
@@ -20,7 +21,9 @@ class SessionsHandler(
 
     fun save(serverRequest: ServerRequest): Mono<ServerResponse> {
         val createSessionForUserRequest =
-            serverRequest.bodyToMono(CreateSessionForUserRequest::class.java)
+            serverRequest
+                .bodyToMono(CreateSessionForUserRequest::class.java)
+                .switchIfEmpty(Mono.error(ServerWebInputException("Bad request.")))
 
         return createSessionForUserRequest.flatMap {
             ServerResponse.ok()

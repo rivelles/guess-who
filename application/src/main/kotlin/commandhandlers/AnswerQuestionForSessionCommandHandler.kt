@@ -13,7 +13,8 @@ class AnswerQuestionForSessionCommandHandler(private val sessionRepository: Sess
     override fun handle(command: AnswerQuestionForSessionCommand): Mono<Int> {
         return sessionRepository
             .findTodaySessionForUser(command.userIdentifier)
-            .switchIfEmpty(Mono.error(RuntimeException("")))
+            .switchIfEmpty(
+                Mono.error(RuntimeException("Couldn't find a session for the user today")))
             .flatMap {
                 it!!.answerQuestion(command.providedAnswer)
 
