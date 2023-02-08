@@ -4,18 +4,18 @@ import Session
 import commands.RequestAnotherTipCommand
 import fixtures.aQuestionWithTips
 import fixtures.anUserIdentifier
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.verify
 import java.lang.RuntimeException
+import java.time.Duration
 import java.time.LocalDate
 import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.commandhandlers.RequestAnotherTipCommandHandler
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 class RequestAnotherTipCommandHandlerTest :
     BehaviorSpec({
@@ -35,10 +35,15 @@ class RequestAnotherTipCommandHandlerTest :
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
                         Mono.just(session)
 
-                    val command = RequestAnotherTipCommand(userIdentifier)
-                    commandHandler.handle(command)
+                    every { sessionRepository.save(session) } returns Mono.just(1)
 
-                    verify { sessionRepository.save(session) }
+                    val returnedValue =
+                        commandHandler.handle(RequestAnotherTipCommand(userIdentifier))
+
+                    StepVerifier.create(returnedValue)
+                        .expectNext(1)
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(2L))
                 }
             }
             `when`("There is no session for user today") {
@@ -46,13 +51,12 @@ class RequestAnotherTipCommandHandlerTest :
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
                         Mono.empty()
 
-                    val exception =
-                        shouldThrow<RuntimeException> {
-                            commandHandler.handle(RequestAnotherTipCommand(userIdentifier))
-                        }
+                    val returnedValue =
+                        commandHandler.handle(RequestAnotherTipCommand(userIdentifier))
 
-                    exception.javaClass shouldBe RuntimeException::class.java
-                    exception.message shouldBe "Session not found for user"
+                    StepVerifier.create(returnedValue)
+                        .expectError(RuntimeException::class.java)
+                        .verify(Duration.ofSeconds(2L))
                 }
             }
         }

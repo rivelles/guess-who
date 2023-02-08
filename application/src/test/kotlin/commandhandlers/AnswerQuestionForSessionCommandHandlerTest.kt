@@ -5,16 +5,16 @@ import Session
 import commands.AnswerQuestionForSessionCommand
 import fixtures.aQuestionWithoutTips
 import fixtures.anUserIdentifier
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.lang.RuntimeException
+import java.time.Duration
 import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
 
 class AnswerQuestionForSessionCommandHandlerTest :
     BehaviorSpec({
@@ -30,9 +30,17 @@ class AnswerQuestionForSessionCommandHandlerTest :
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
                         Mono.just(session)
 
-                    val command =
-                        AnswerQuestionForSessionCommand(userIdentifier, QuestionAnswer("Answer"))
-                    commandHandler.handle(command)
+                    every { sessionRepository.save(session) } returns Mono.just(1)
+
+                    val returnedValue =
+                        commandHandler.handle(
+                            AnswerQuestionForSessionCommand(
+                                userIdentifier, QuestionAnswer("Answer")))
+
+                    StepVerifier.create(returnedValue)
+                        .expectNext(1)
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(2L))
 
                     verify { sessionRepository.save(session) }
                 }
@@ -43,10 +51,14 @@ class AnswerQuestionForSessionCommandHandlerTest :
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
                         Mono.just(session)
 
-                    val command =
-                        AnswerQuestionForSessionCommand(
-                            userIdentifier, QuestionAnswer("Wrong answer"))
-                    commandHandler.handle(command)
+                    val returnedValue =
+                        commandHandler.handle(
+                            AnswerQuestionForSessionCommand(
+                                userIdentifier, QuestionAnswer("Wrong answer")))
+
+                    StepVerifier.create(returnedValue)
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(2L))
 
                     verify(exactly = 0) { sessionRepository.save(session) }
                 }
@@ -56,12 +68,14 @@ class AnswerQuestionForSessionCommandHandlerTest :
                     every { sessionRepository.findTodaySessionForUser(userIdentifier) } returns
                         Mono.empty()
 
-                    val command =
-                        AnswerQuestionForSessionCommand(userIdentifier, QuestionAnswer("Answer"))
-                    val exception = shouldThrow<RuntimeException> { commandHandler.handle(command) }
+                    val returnedValue =
+                        commandHandler.handle(
+                            AnswerQuestionForSessionCommand(
+                                userIdentifier, QuestionAnswer("Answer")))
 
-                    exception.javaClass shouldBe RuntimeException::class.java
-                    exception.message shouldBe "Session not found for user"
+                    StepVerifier.create(returnedValue)
+                        .expectError(RuntimeException::class.java)
+                        .verify(Duration.ofSeconds(2L))
                 }
             }
         }

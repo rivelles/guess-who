@@ -10,14 +10,14 @@ import reactor.core.publisher.Mono
 class AnswerQuestionForSessionCommandHandler(private val sessionRepository: SessionRepository) :
     CommandHandler<AnswerQuestionForSessionCommand> {
 
-    override fun handle(command: AnswerQuestionForSessionCommand): Mono<Unit> {
+    override fun handle(command: AnswerQuestionForSessionCommand): Mono<Int> {
         return sessionRepository
             .findTodaySessionForUser(command.userIdentifier)
-            ?.switchIfEmpty(Mono.error(RuntimeException("")))
-            .map {
+            .switchIfEmpty(Mono.error(RuntimeException("")))
+            .flatMap {
                 it!!.answerQuestion(command.providedAnswer)
 
-                if (it.isFinished()) sessionRepository.save(it)
+                if (it.isFinished()) sessionRepository.save(it) else Mono.empty()
             }
     }
 }

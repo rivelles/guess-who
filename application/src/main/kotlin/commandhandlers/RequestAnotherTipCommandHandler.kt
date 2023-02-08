@@ -12,7 +12,7 @@ class RequestAnotherTipCommandHandler(private val sessionRepository: SessionRepo
         return sessionRepository
             .findTodaySessionForUser(command.userIdentifier)
             .switchIfEmpty(Mono.error(RuntimeException("Session not found for user")))
-            ?.flatMap { session ->
+            .flatMap { session ->
                 session!!.requestOneMoreTip()
                 sessionRepository.save(session)
             }
