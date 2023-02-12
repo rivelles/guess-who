@@ -48,6 +48,9 @@ tasks.withType<KotlinCompile> {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+
+    // Need this otherwise initialization fails with InaccessibleObjectException
+    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
 }
 
 spotless {
