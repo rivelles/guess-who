@@ -50,7 +50,7 @@ class SessionsRouterIT : StringSpec() {
             val question =
                 aQuestionWithTips(
                     LocalDate.now(), listOf("Tip 1", "Tip 2", "Tip 3", "Tip 4", "Tip 5"))
-            questionRepository.save(question)
+            questionRepository.save(question).toFuture().get()
 
             webTestClient
                 .post()
@@ -64,10 +64,9 @@ class SessionsRouterIT : StringSpec() {
         "Should answer to question in session" {
             val requestBody = AnswerQuestionForSessionRequest("Answer")
             val question = aQuestionWithoutTips(LocalDate.now())
-            questionRepository.save(question)
 
             val session = Session(UserIdentifier("127.0.0.2"), question)
-            sessionRepository.save(session)
+            questionRepository.save(question).then(sessionRepository.save(session)).toFuture().get()
 
             webTestClient
                 .post()

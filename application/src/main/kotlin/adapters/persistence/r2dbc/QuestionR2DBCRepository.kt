@@ -37,43 +37,50 @@ class QuestionR2DBCRepository(
             .reduce { question1, question2 -> question1?.mergeQuestionTips(question2) }
 
     override fun save(question: Question): Mono<Int> {
-        val rxtx = TransactionalOperator.create(tm)
-
-        return databaseClient
-            .sql {
-                """
+        val questionMono =
+            databaseClient
+                .sql {
+                    """
                         INSERT INTO questions
                         (id, description, answer, image, date_appearance)
                         VALUES
                         (:id, :description, :answer, :image, :date_appearance)
                     """.trimIndent()
-            }
-            .bind("id", question.questionId.id)
-            .bind("description", question.questionDescription.description)
-            .bind("answer", question.questionAnswer.answer)
-            .bind("image", question.questionImage.imageUrl)
-            .bind("date_appearance", question.questionDateOfAppearance.dateOfAppearance)
-            .fetch()
-            .rowsUpdated()
-            .doOnSuccess {
-                question.questionTips.tips.forEach {
-                    databaseClient
-                        .sql {
-                            """
-                                    INSERT INTO question_tips
-                                    (id, question_id, tip)
-                                    VALUES
-                                    (:id, '${question.questionId.id}', :tip)
-                                """.trimIndent()
-                        }
-                        .bind("id", UUID.randomUUID().toString())
-                        .bind("tip", it)
-                        .fetch()
-                        .rowsUpdated()
                 }
-            }
-            .`as`(rxtx::transactional)
+                .bind("id", question.questionId.id)
+                .bind("description", question.questionDescription.description)
+                .bind("answer", question.questionAnswer.answer)
+                .bind("image", question.questionImage.imageUrl)
+                .bind("date_appearance", question.questionDateOfAppearance.dateOfAppearance)
+                .fetch()
+                .rowsUpdated()
+
+        if (question.questionTips.tips.isNotEmpty()) {
+            val rxtx = TransactionalOperator.create(tm)
+
+            val tipsMono =
+                databaseClient
+                    .sql {
+                        """
+                    INSERT INTO question_tips
+                    (id, question_id, tip)
+                    VALUES
+                    ${question.insertTipsStatement()}
+                """.trimIndent()
+                    }
+                    .fetch()
+                    .rowsUpdated()
+
+            return questionMono.then(tipsMono).`as`(rxtx::transactional)
+        }
+
+        return questionMono
     }
+
+    private fun Question.insertTipsStatement() =
+        this.questionTips.tips
+            .map { "('${UUID.randomUUID()}', '${this.questionId.id}', '$it')" }
+            .reduce { acc, s -> "$acc,$s" }
 
     private fun MutableMap<String, Any>.toQuestion(): Question? {
         if (this.isEmpty()) return null
