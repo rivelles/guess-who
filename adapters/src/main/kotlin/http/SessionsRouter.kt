@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.server.router
 class SessionsRouter {
 
     @Bean
-    fun coRoute(sessionsHandler: SessionsHandler) = router {
+    fun route(sessionsHandler: SessionsHandler) = router {
         (accept(APPLICATION_JSON) and "/sessions").nest {
             POST("").invoke(sessionsHandler::save)
 
