@@ -7,10 +7,10 @@ import fixtures.aQuestionWithoutTips
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.extensions.spring.SpringExtension
 import java.time.LocalDate
-import org.rivelles.adapters.http.requests.AnswerQuestionForSessionRequest
-import org.rivelles.adapters.http.requests.CreateSessionForUserRequest
 import org.rivelles.adapters.persistence.QuestionRepository
 import org.rivelles.adapters.persistence.SessionRepository
+import org.rivelles.http.requests.AnswerQuestionForSessionRequest
+import org.rivelles.http.requests.CreateSessionForUserRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
 import org.springframework.boot.test.context.SpringBootTest

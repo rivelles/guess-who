@@ -25,7 +25,7 @@ dependencies {
     implementation("org.valiktor:valiktor-core:0.12.0")
     implementation("io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE")
     implementation("org.flywaydb:flyway-core:9.11.0")
-    api(project(":domain"))
+    implementation(project(":application"))
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.kotest:kotest-runner-junit5:5.5.4")

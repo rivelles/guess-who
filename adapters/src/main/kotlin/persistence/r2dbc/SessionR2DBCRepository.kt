@@ -1,4 +1,4 @@
-package org.rivelles.adapters.persistence.r2dbc
+package org.rivelles.persistence.r2dbc
 
 import Question
 import QuestionAnswer

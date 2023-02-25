@@ -1,13 +1,13 @@
-package org.rivelles.adapters.http
+package org.rivelles.http
 
 import QuestionAnswer
 import UserIdentifier
 import commands.AnswerQuestionForSessionCommand
 import commands.CreateSessionCommand
-import org.rivelles.adapters.http.requests.AnswerQuestionForSessionRequest
-import org.rivelles.adapters.http.requests.CreateSessionForUserRequest
 import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
 import org.rivelles.commandhandlers.CreateSessionCommandHandler
+import org.rivelles.http.requests.AnswerQuestionForSessionRequest
+import org.rivelles.http.requests.CreateSessionForUserRequest
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.server.ServerWebInputException

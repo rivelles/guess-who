@@ -1,3 +1,3 @@
-package org.rivelles.adapters.http.requests
+package org.rivelles.http.requests
 
 data class CreateSessionForUserRequest(val userIdentifier: String)

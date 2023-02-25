@@ -1,4 +1,4 @@
-package org.rivelles.adapters.http
+package org.rivelles.http
 
 import org.springframework.context.annotation.Bean
 import org.springframework.http.MediaType.APPLICATION_JSON
