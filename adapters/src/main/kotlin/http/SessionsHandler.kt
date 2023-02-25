@@ -4,6 +4,8 @@ import QuestionAnswer
 import UserIdentifier
 import commands.AnswerQuestionForSessionCommand
 import commands.CreateSessionCommand
+import org.rivelles.adapters.persistence.QuestionRepository
+import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.commandhandlers.AnswerQuestionForSessionCommandHandler
 import org.rivelles.commandhandlers.CreateSessionCommandHandler
 import org.rivelles.http.requests.AnswerQuestionForSessionRequest
@@ -15,9 +17,13 @@ import reactor.core.publisher.Mono
 
 @Component
 class SessionsHandler(
-    private val createSessionCommandHandler: CreateSessionCommandHandler,
-    private val answerQuestionForSessionCommandHandler: AnswerQuestionForSessionCommandHandler
+    sessionRepository: SessionRepository,
+    questionRepository: QuestionRepository
 ) {
+    val createSessionCommandHandler =
+        CreateSessionCommandHandler(sessionRepository, questionRepository)
+    val answerQuestionForSessionCommandHandler =
+        AnswerQuestionForSessionCommandHandler(sessionRepository)
 
     fun save(serverRequest: ServerRequest): Mono<ServerResponse> {
         val createSessionForUserRequest =

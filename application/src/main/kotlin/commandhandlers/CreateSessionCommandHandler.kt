@@ -4,10 +4,8 @@ import Session
 import commands.CreateSessionCommand
 import org.rivelles.adapters.persistence.QuestionRepository
 import org.rivelles.adapters.persistence.SessionRepository
-import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 
-@Component
 class CreateSessionCommandHandler(
     private val sessionRepository: SessionRepository,
     private val questionRepository: QuestionRepository
