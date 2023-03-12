@@ -14,6 +14,8 @@ class SessionsRouter {
             POST("").invoke(sessionsHandler::save)
 
             POST("/{userIdentifier}:answer").invoke(sessionsHandler::answer)
+
+            GET("/{userIdentifier}").invoke(sessionsHandler::getByUserIdentifier)
         }
     }
 }

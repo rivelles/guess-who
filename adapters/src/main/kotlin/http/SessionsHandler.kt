@@ -13,6 +13,8 @@ import org.rivelles.http.requests.CreateSessionForUserRequest
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.server.ServerWebInputException
+import queries.FindTodaySessionForUser
+import queryhandlers.FindTodaySessionForUserQueryHandler
 import reactor.core.publisher.Mono
 
 @Component
@@ -24,6 +26,7 @@ class SessionsHandler(
         CreateSessionCommandHandler(sessionRepository, questionRepository)
     val answerQuestionForSessionCommandHandler =
         AnswerQuestionForSessionCommandHandler(sessionRepository)
+    val findTodaySessionForUserQueryHandler = FindTodaySessionForUserQueryHandler(sessionRepository)
 
     fun save(serverRequest: ServerRequest): Mono<ServerResponse> {
         val createSessionForUserRequest =
@@ -54,5 +57,18 @@ class SessionsHandler(
                         AnswerQuestionForSessionCommand(
                             UserIdentifier(userIdentifier), QuestionAnswer(it.providedAnswer))))
         }
+    }
+
+    fun getByUserIdentifier(serverRequest: ServerRequest): Mono<ServerResponse> {
+        val userIdentifier =
+            serverRequest.pathVariable("userIdentifier").ifEmpty {
+                return ServerResponse.badRequest().build()
+            }
+
+        return findTodaySessionForUserQueryHandler.handle(
+                FindTodaySessionForUser(UserIdentifier(userIdentifier)))
+            .flatMap {
+                it?.let { ServerResponse.ok().bodyValue(it) } ?: ServerResponse.notFound().build()
+            }
     }
 }
