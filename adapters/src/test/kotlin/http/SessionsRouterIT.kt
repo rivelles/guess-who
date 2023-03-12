@@ -2,6 +2,7 @@ package org.rivelles.adapters.http
 
 import Session
 import UserIdentifier
+import com.fasterxml.jackson.databind.ObjectMapper
 import fixtures.aQuestionWithTips
 import fixtures.aQuestionWithoutTips
 import io.kotest.core.spec.style.StringSpec
@@ -30,6 +31,7 @@ class SessionsRouterIT : StringSpec() {
     @Autowired lateinit var webTestClient: WebTestClient
     @Autowired lateinit var questionRepository: QuestionRepository
     @Autowired lateinit var sessionRepository: SessionRepository
+    @Autowired lateinit var objectMapper: ObjectMapper
 
     private val postgreSQLContainer: PostgreSQLContainer<*> =
         PostgreSQLContainer("postgres:11.1")
@@ -76,6 +78,20 @@ class SessionsRouterIT : StringSpec() {
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful
+        }
+        "Should retrieve today's session for user" {
+            val question = aQuestionWithoutTips(LocalDate.now())
+            val session = Session(UserIdentifier("127.0.0.2"), question)
+            questionRepository.save(question).then(sessionRepository.save(session)).toFuture().get()
+
+            webTestClient
+                .get()
+                .uri("/sessions/127.0.0.2")
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful
+                .expectBody()
+                .json(objectMapper.writeValueAsString(session))
         }
     }
 }

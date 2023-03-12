@@ -46,7 +46,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
 
-    // Need this otherwise initialization fails with InaccessibleObjectException
+    // Need this otherwise initialization fails with InaccessibleObjectException - https://github.com/mockk/mockk/issues/681
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
 }
 
