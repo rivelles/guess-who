@@ -1,5 +1,5 @@
 rootProject.name = "guess-who"
 
-include("adapters")
-include("application")
-include("domain")
+include("guess-who-adapters")
+include("guess-who-application")
+include("guess-who-domain")

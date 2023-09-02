@@ -37,7 +37,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             .fetch()
             .all()
             .mapNotNull { it.toSession() }
-            .reduce { session1, session2 -> session1?.mergeTips(session2) }
+            .reduce { session1, session2 -> session1 mergeWith session2 }
     }
 
     override fun save(session: Session): Mono<Int> {
@@ -56,7 +56,7 @@ class SessionR2DBCRepository(val databaseClient: DatabaseClient) : SessionReposi
             .rowsUpdated()
     }
 
-    private fun Session?.mergeTips(session: Session?): Session? {
+    private infix fun Session?.mergeWith(session: Session?): Session? {
         if (this == null || session == null) return null
         val newQuestionTips = this.question.questionTips.tips + session.question.questionTips.tips
         val newShowedTips = this.showedTips.tips + session.showedTips.tips

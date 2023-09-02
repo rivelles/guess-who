@@ -22,7 +22,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE")
     implementation("org.flywaydb:flyway-core:9.11.0")
-    implementation(project(":application"))
+    implementation(project(":guess-who-application"))
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.kotest:kotest-runner-junit5:5.5.4")
@@ -33,7 +33,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql:1.17.6")
     testImplementation("org.postgresql:postgresql:42.5.1")
     testImplementation("io.projectreactor:reactor-test:3.5.2")
-    testImplementation(testFixtures(project(":domain")))
+    testImplementation(testFixtures(project(":guess-who-domain")))
 }
 
 tasks.withType<KotlinCompile> {
