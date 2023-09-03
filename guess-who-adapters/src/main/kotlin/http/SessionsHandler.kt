@@ -28,34 +28,23 @@ class SessionsHandler(
         AnswerQuestionForSessionCommandHandler(sessionRepository)
     val findTodaySessionForUserQueryHandler = FindTodaySessionForUserQueryHandler(sessionRepository)
 
-    fun save(serverRequest: ServerRequest): Mono<ServerResponse> {
-        val createSessionForUserRequest =
-            serverRequest
-                .bodyToMono(CreateSessionForUserRequest::class.java)
-                .switchIfEmpty(Mono.error(ServerWebInputException("Bad request.")))
-
-        return createSessionForUserRequest.flatMap {
-            ServerResponse.ok()
-                .body(
-                    createSessionCommandHandler.handle(
-                        CreateSessionCommand(UserIdentifier(it.userIdentifier))))
-        }
-    }
+    fun save(serverRequest: ServerRequest): Mono<ServerResponse> =
+        serverRequest
+            .bodyToMono(CreateSessionForUserRequest::class.java)
+            .switchIfEmpty(Mono.error(ServerWebInputException("Bad request.")))
+            .flatMap {
+                ServerResponse.ok().body(createSessionCommandHandler.handle(it.toCommand()))
+            }
 
     fun answer(serverRequest: ServerRequest): Mono<ServerResponse> {
         val userIdentifier =
             serverRequest.pathVariable("userIdentifier").ifEmpty {
                 return ServerResponse.badRequest().build()
             }
-        val createSessionForUserRequest =
-            serverRequest.bodyToMono(AnswerQuestionForSessionRequest::class.java)
 
-        return createSessionForUserRequest.flatMap {
+        return serverRequest.bodyToMono(AnswerQuestionForSessionRequest::class.java).flatMap {
             ServerResponse.ok()
-                .body(
-                    answerQuestionForSessionCommandHandler.handle(
-                        AnswerQuestionForSessionCommand(
-                            UserIdentifier(userIdentifier), QuestionAnswer(it.providedAnswer))))
+                .body(answerQuestionForSessionCommandHandler.handle(it.toCommand(userIdentifier)))
         }
     }
 
@@ -67,8 +56,16 @@ class SessionsHandler(
 
         return findTodaySessionForUserQueryHandler.handle(
                 FindTodaySessionForUser(UserIdentifier(userIdentifier)))
-            .flatMap {
-                it?.let { ServerResponse.ok().bodyValue(it) } ?: ServerResponse.notFound().build()
+            .flatMap { session ->
+                session?.let { ServerResponse.ok().bodyValue(it) }
+                    ?: ServerResponse.notFound().build()
             }
     }
 }
+
+private fun CreateSessionForUserRequest.toCommand() =
+    CreateSessionCommand(UserIdentifier(this.userIdentifier))
+
+private fun AnswerQuestionForSessionRequest.toCommand(userIdentifier: String) =
+    AnswerQuestionForSessionCommand(
+        UserIdentifier(userIdentifier), QuestionAnswer(this.providedAnswer))

@@ -81,12 +81,12 @@ class SessionsRouterIT : StringSpec() {
         }
         "Should retrieve today's session for user" {
             val question = aQuestionWithoutTips(LocalDate.now())
-            val session = Session(UserIdentifier("127.0.0.2"), question)
+            val session = Session(UserIdentifier("127.0.0.3"), question)
             questionRepository.save(question).then(sessionRepository.save(session)).toFuture().get()
 
             webTestClient
                 .get()
-                .uri("/sessions/127.0.0.2")
+                .uri("/sessions/127.0.0.3")
                 .exchange()
                 .expectStatus()
                 .is2xxSuccessful
