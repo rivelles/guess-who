@@ -1,0 +1,12 @@
+version: '3.5'
+
+services:
+  postgres:
+    image: postgres
+    hostname: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: guess_who
+    ports:
+      - "5432:5432"
