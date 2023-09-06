@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.router
 
 @Component
-class SessionsRouter {
+class HttpRouter {
 
     @Bean
-    fun route(sessionsHandler: SessionsHandler) = router {
+    fun route(sessionsHandler: SessionsHandler, questionsHandler: QuestionsHandler) = router {
         (accept(APPLICATION_JSON) and "/sessions").nest {
             POST("").invoke(sessionsHandler::save)
 
@@ -17,5 +17,6 @@ class SessionsRouter {
 
             GET("/{userIdentifier}").invoke(sessionsHandler::getByUserIdentifier)
         }
+        (accept(APPLICATION_JSON) and "/questions").nest { POST("").invoke(questionsHandler::save) }
     }
 }

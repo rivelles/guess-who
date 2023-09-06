@@ -11,6 +11,7 @@ import java.time.LocalDate
 import org.rivelles.adapters.persistence.QuestionRepository
 import org.rivelles.adapters.persistence.SessionRepository
 import org.rivelles.http.requests.AnswerQuestionForSessionRequest
+import org.rivelles.http.requests.CreateQuestionRequest
 import org.rivelles.http.requests.CreateSessionForUserRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient
@@ -24,7 +25,7 @@ import org.testcontainers.containers.PostgreSQLContainer
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @TestPropertySource(locations = ["classpath:application.yaml"])
-class SessionsRouterIT : StringSpec() {
+class HttpRouterIT : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
 
@@ -46,6 +47,24 @@ class SessionsRouterIT : StringSpec() {
 
         "When creating session with empty body, should receive client error" {
             webTestClient.post().uri("/sessions").exchange().expectStatus().is4xxClientError
+        }
+        "Should create question" {
+            val requestBody =
+                CreateQuestionRequest(
+                    "Description",
+                    "Answer",
+                    listOf("Tip 1, Tip 2, Tip 3"),
+                    "https://localhost.com/images/image.jpg",
+                    LocalDate.now().plusDays(1))
+
+            webTestClient
+                .post()
+                .uri("/questions")
+                .contentType(APPLICATION_JSON)
+                .bodyValue(requestBody)
+                .exchange()
+                .expectStatus()
+                .is2xxSuccessful
         }
         "Should create session" {
             val requestBody = CreateSessionForUserRequest("127.0.0.1")
